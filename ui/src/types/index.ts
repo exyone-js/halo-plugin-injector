@@ -27,6 +27,17 @@ export interface MatchRule {
   children?: MatchRule[]
 }
 
+/**
+ * 精简的页面匹配表达：include 之间为 OR，exclude 恒为 AND_NOT。
+ * 由前端编译为 matchRule 树并随规则一起提交，后端优先使用 pages。
+ */
+export interface RulePages {
+  include: string[]
+  exclude: string[]
+  /** 显式匹配器，留空时按语法自动识别（后端 RuleConfigCodec 负责识别）。 */
+  matcher?: MatchRuleMatcher | null
+}
+
 // Backward-compatible type for legacy editor component.
 export interface PathMatchRule {
   pathPattern: string
@@ -44,6 +55,8 @@ export interface InjectionRule {
   match: string
   position: InjectionPosition
   matchRule: MatchRule
+  /** 精简页面匹配表达，新表单优先使用；缺省时后端回退到 matchRule。 */
+  pages?: RulePages | null
   snippetIds: string[]
 }
 
@@ -122,6 +135,15 @@ export function makeSnippet(override: Partial<CodeSnippet> = {}): CodeSnippet {
   }
 }
 
+export function makeRulePages(override: Partial<RulePages> = {}): RulePages {
+  return {
+    include: ['/**'],
+    exclude: [],
+    matcher: null,
+    ...override,
+  }
+}
+
 export function makeRule(override: Partial<InjectionRule> = {}): InjectionRule {
   return {
     apiVersion: 'injector.erzbir.com/v1alpha1',
@@ -130,11 +152,12 @@ export function makeRule(override: Partial<InjectionRule> = {}): InjectionRule {
     id: '',
     name: '',
     description: '',
-    enabled: false,
+    enabled: true,
     mode: 'HEAD',
     match: '',
     position: 'APPEND',
     matchRule: makePathMatchRule(),
+    pages: makeRulePages(),
     snippetIds: [],
     ...override,
   }

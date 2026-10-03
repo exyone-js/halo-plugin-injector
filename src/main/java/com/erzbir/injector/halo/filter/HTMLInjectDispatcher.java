@@ -106,7 +106,7 @@ class HTMLInjectDispatcher {
                 + "|" + rule.getMode()
                 + "|" + rule.getMatch()
                 + "|" + rule.getPosition()
-                + "|" + rule.getMatchRule()
+                + "|" + rule.getEffectiveMatchRule()
                 + "|" + rule.getSnippetIds().stream().sorted().collect(Collectors.joining(","))
                 + "|" + code;
         }

@@ -3,7 +3,7 @@ import { Dialog, Toast } from '@halo-dev/components'
 import { ruleApi, snippetApi } from '@/apis'
 import type { CodeSnippet, InjectionRule, ItemList } from '@/types'
 import { uniqueStrings } from './util'
-import { apiErrorMessage, emptyList, isValidMatchRule } from './injectorDataUtils'
+import { apiErrorMessage, emptyList, isValidMatchRule, isValidPages } from './injectorDataUtils'
 import {
   detachSnippetsFromRules,
   restoreDetachedSnippetRelations,
@@ -90,7 +90,10 @@ export function useInjectorData() {
   }
 
   function validateRule(rule: InjectionRule): string | null {
-    if (!isValidMatchRule(rule.matchRule)) return '匹配规则无效, 请完善规则组'
+    const matchValid = rule.pages
+      ? isValidPages(rule.pages)
+      : isValidMatchRule(rule.matchRule)
+    if (!matchValid) return '页面匹配无效, 请至少填写一个以 / 开头的路径'
     if ((rule.mode === 'SELECTOR' || rule.mode === 'ID') && !rule.match.trim()) {
       return '请填写匹配内容'
     }

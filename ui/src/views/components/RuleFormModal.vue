@@ -4,7 +4,7 @@ import { type CodeSnippet, type InjectionRule, makeRule } from '@/types'
 import BaseFormModal from './BaseFormModal.vue'
 import RuleFields from './RuleFields.vue'
 import RelationPicker from './RelationPicker.vue'
-import { isSameJson, isValidMatchRule } from '@/views/composables/injectorDataUtils'
+import { isSameJson, isValidMatchRule, isValidPages } from '@/views/composables/injectorDataUtils'
 
 defineProps<{
   snippets: CodeSnippet[]
@@ -23,7 +23,8 @@ const dirty = computed(
 )
 const valid = computed(
   () =>
-    isValidMatchRule(rule.value.matchRule) &&
+    selectedSnippetIds.value.length > 0 &&
+    (rule.value.pages ? isValidPages(rule.value.pages) : isValidMatchRule(rule.value.matchRule)) &&
     (!['SELECTOR', 'ID'].includes(rule.value.mode) || !!rule.value.match.trim()),
 )
 

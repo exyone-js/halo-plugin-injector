@@ -35,6 +35,13 @@ public class InjectionRule extends AbstractExtension implements IInjectionRule {
     @Valid
     @NotNull(message = "InjectionRule matchRule must not be null")
     private MatchRule matchRule = MatchRule.defaultRule();
+    /**
+     * 精简的页面匹配表达，可选。新表单优先写入该字段；为空时回退使用 {@link #matchRule}。
+     *
+     * <p>运行时由 {@link RuleConfigCodec} 编译为引擎匹配树，旧数据仅有 matchRule 时行为不变。
+     */
+    @Valid
+    private RulePages pages;
     @NotNull(message = "InjectionRule snippetIds must not be null")
     private Set<@NotBlank(message = "InjectionRule snippetId must not be blank") String> snippetIds = new LinkedHashSet<>();
 
@@ -56,8 +63,26 @@ public class InjectionRule extends AbstractExtension implements IInjectionRule {
         return Boolean.TRUE.equals(enabled);
     }
 
+    /**
+     * 返回运行时实际生效的匹配树：存在合法 pages 时由其编译，否则回退到历史 matchRule。
+     */
+    public MatchRule getEffectiveMatchRule() {
+        if (pages != null) {
+            MatchRule compiled = RuleConfigCodec.compile(pages);
+            if (compiled != null) {
+                return compiled;
+            }
+        }
+        return getMatchRule();
+    }
+
     public boolean valid() {
-        if (getMatchRule() == null || !getMatchRule().valid()) {
+        // 显式使用精简表达时，先对 pages 做字段级校验（含空 include / 非法正则 / 路径前缀）
+        if (pages != null && !RuleConfigCodec.validate(pages).isEmpty()) {
+            return false;
+        }
+        MatchRule effective = getEffectiveMatchRule();
+        if (effective == null || !effective.valid()) {
             return false;
         }
 

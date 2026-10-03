@@ -31,7 +31,7 @@ public class InjectHelper {
 
         return ruleManager.listRuleByMode(mode)
                 .filter(InjectionRule::isEnabled)
-                .filter(rule -> matchRuleResolver.matches(rule.getMatchRule(), targetPath))
+                .filter(rule -> matchRuleResolver.matches(rule.getEffectiveMatchRule(), targetPath))
                 .onErrorResume(e -> {
                     log.warn("Failed to resolve matched rules, mode: {}, path: {}", mode,
                         targetPath, e);
